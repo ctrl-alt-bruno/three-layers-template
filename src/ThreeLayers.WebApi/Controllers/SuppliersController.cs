@@ -46,11 +46,11 @@ public class SuppliersController(
     public async Task<ActionResult<SupplierResponse>> Add(SupplierCreateRequest supplierCreateRequest)
     {
         if (!ModelState.IsValid)
-            return CustomResponse(ModelState);
+            return CreateCustomActionResult(ModelState);
 
         await supplierService.AddAsync(SupplierMapper.ToEntity(supplierCreateRequest));
 
-        return CustomResponse(HttpStatusCode.Created, supplierCreateRequest);
+        return CreateCustomActionResult(HttpStatusCode.Created, supplierCreateRequest);
     }
 
     // [HttpPut("{id:guid}")]

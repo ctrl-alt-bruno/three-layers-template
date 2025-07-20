@@ -15,25 +15,40 @@ public abstract class CustomControllerBase(
     ProblemDetailsFactory problemDetailsFactory)
     : ControllerBase
 {
-    protected ActionResult CustomResponse(ModelStateDictionary modelStateDictionary)
+    protected ActionResult CreateCustomActionResult(ModelStateDictionary modelStateDictionary)
     {
         if (!modelStateDictionary.IsValid)
             foreach (ModelError error in modelStateDictionary.Values.SelectMany(x => x.Errors))
-                notifier.Handle(new Notification(error.Exception == null
-                    ? error.ErrorMessage
-                    : error.Exception.Message));
+                Notify(error.Exception == null ? error.ErrorMessage : error.Exception.Message);
 
-        return CustomResponse();
+        return CreateCustomActionResult();
     }
 
-    protected ActionResult CustomResponse(HttpStatusCode httpStatusCode = HttpStatusCode.OK, object? result = null)
+    protected ActionResult CreateCustomActionResult(HttpStatusCode httpStatusCode = HttpStatusCode.OK, object? result = null)
     {
-        if (!notifier.HasNotification())
-            return new ObjectResult(result)
-            {
-                StatusCode = Convert.ToInt32(httpStatusCode)
-            };
+        if (notifier.HasNotification())
+            return CreateBadRequestObjectResult();
+        
+        return new ObjectResult(result)
+        {
+            StatusCode = Convert.ToInt32(httpStatusCode)
+        };
+    }
+    
+    protected ActionResult CreateCustomActionResult(string actionName, object routeValues, object result)
+    {
+        if (notifier.HasNotification())
+            return CreateBadRequestObjectResult();
+        
+        return CreatedAtAction(
+            actionName,
+            routeValues,
+            result
+        );
+    }
 
+    private ActionResult CreateBadRequestObjectResult()
+    {
         ValidationProblemDetails problemDetails = problemDetailsFactory.CreateValidationProblemDetails(
             HttpContext!,
             modelStateDictionary: new ModelStateDictionary(),

@@ -47,11 +47,13 @@ public class ProductsController(
     public async Task<ActionResult<ProductResponse>> Add(ProductCreateRequest productCreateRequest)
     {
         if (!ModelState.IsValid)
-            return CustomResponse(ModelState);
+            return CreateCustomActionResult(ModelState);
 
-        await productService.AddAsync(ProductMapper.ToEntity(productCreateRequest));
+        Product product = ProductMapper.ToEntity(productCreateRequest);
+        await productService.AddAsync(product);
+        ProductResponse response = ProductMapper.ToResponse(product);
 
-        return CustomResponse(HttpStatusCode.Created, productCreateRequest);
+        return CreateCustomActionResult(nameof(GetById), new { id = product.Id }, response);
     }
 
     [HttpPut("{id:guid}")]
@@ -61,11 +63,11 @@ public class ProductsController(
             Notify("error");
 
         if (!ModelState.IsValid)
-            return CustomResponse(ModelState);
+            return CreateCustomActionResult(ModelState);
 
         await productService.UpdateAsync(ProductMapper.ToEntity(productUpdate));
 
-        return CustomResponse(HttpStatusCode.NoContent);
+        return CreateCustomActionResult(HttpStatusCode.NoContent);
     }
 
     [HttpDelete("{id:guid}")]
@@ -76,6 +78,6 @@ public class ProductsController(
         if (!deleted)
             return NotFound();
 
-        return CustomResponse(HttpStatusCode.NoContent);
+        return CreateCustomActionResult(HttpStatusCode.NoContent);
     }
 }

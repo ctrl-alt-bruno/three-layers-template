@@ -5,7 +5,7 @@ Accept: application/json
 
 ###
 
-GET {{WebAPI_HostAddress}}/api/products/{{$random.uuid}}
+GET {{WebAPI_HostAddress}}/api/products/b99d91fc-274b-407b-a5d0-b8b7288df96f
 Accept: application/json
 
 ###

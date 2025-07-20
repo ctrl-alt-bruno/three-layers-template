@@ -17,5 +17,5 @@ Content-Type: application/json
   "name": "{{$random.commerce.productName}}",
   "description": "{{$random.commerce.productName}}",
   "value": 10,
-  "supplier_id": "{{$random.uuid}}"
+  "supplier_id": "3a6898d4-6281-47bd-b0bd-68a4f98271a9"
 }

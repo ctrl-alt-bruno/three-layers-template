@@ -13,8 +13,7 @@ public static class ProductMapper
         Description = dto.Description,
         Value = dto.Value,
         SupplierId = dto.SupplierId,
-        Active = false,
-        CreationDate = DateTime.UtcNow.ToUniversalTime()
+        Active = false
     };
 
     public static Product ToEntity(ProductUpdateRequest dto) => new()
@@ -35,7 +34,6 @@ public static class ProductMapper
         Value = entity.Value,
         SupplierId = entity.SupplierId,
         SupplierName = entity.Supplier?.Name ?? string.Empty,
-        Active = entity.Active,
-        CreationDate = entity.CreationDate.ToUniversalTime()
+        Active = entity.Active
     };
 }

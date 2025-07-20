@@ -1,0 +1,30 @@
+@WebAPI_HostAddress = http://localhost:5235
+
+GET {{WebAPI_HostAddress}}/api/suppliers
+Accept: application/json
+
+###
+
+GET {{WebAPI_HostAddress}}/api/suppliers/{{$random.uuid}}
+Accept: application/json
+
+###
+
+POST {{WebAPI_HostAddress}}/api/suppliers
+Content-Type: application/json
+
+{
+  "name": "{{$random.name.fullName}}",
+  "document": "12345678901",
+  "supplier_type": 1,
+  "address":
+  {
+    "street": "{{$random.address.streetAddress}}",
+    "number": "{{$random.address.streetAddressNumber}}",
+    "complement": "{{$random.address.streetSuffix}}",
+    "postal_code": "12345678",
+    "region": "{{$random.address.secondaryAddress}}",
+    "city": "{{$random.address.cityName}}",
+    "state": "{{$random.address.stateAbbr}}"
+  }
+}

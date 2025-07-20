@@ -13,7 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThreeLayers.WebApi", "src\T
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "http", "http", "{C7DF151E-3E8F-4FBC-BC54-B29C8FFD88F7}"
 	ProjectSection(SolutionItems) = preProject
-		http\ThreeLayers.WebAPI.http = http\ThreeLayers.WebAPI.http
+		http\suppliers.http = http\suppliers.http
+		http\products.http = http\products.http
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "public", "public", "{51D3E38D-D63D-4E57-91F7-BDC6F630BE06}"

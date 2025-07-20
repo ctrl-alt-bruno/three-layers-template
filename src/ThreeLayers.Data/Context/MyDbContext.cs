@@ -39,7 +39,7 @@ public sealed class MyDbContext : DbContext
                      .Where(entry => entry.Entity.GetType().GetProperty("CreationDate") != null))
         {
             if (entry.State == EntityState.Added)
-                entry.Property("CreationDate").CurrentValue = DateTime.Now;
+                entry.Property("CreationDate").CurrentValue = DateTime.UtcNow;
 
             if (entry.State == EntityState.Modified)
                 entry.Property("CreationDate").IsModified = false;

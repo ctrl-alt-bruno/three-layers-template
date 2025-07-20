@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using ThreeLayers.Contracts.Products;
+using ThreeLayers.Contracts.Suppliers.Addresses;
 
 namespace ThreeLayers.Contracts.Suppliers;
 

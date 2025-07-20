@@ -1,73 +1,80 @@
-// using Microsoft.AspNetCore.Mvc;
-// using ThreeLayers.Business.Interfaces;
-// using ThreeLayers.Business.Models;
-// using ThreeLayers.Contracts;
-//
-// namespace ThreeLayers.WebApi.Controllers
-// {
-// 	public class SuppliersController : MyControllerBase
-// 	{
-// 		private readonly ISupplierRepository _supplierRepository;
-// 		private readonly ISupplierService _supplierService;
-//
-// 		public SuppliersController(ISupplierRepository supplierRepository,
-// 			ISupplierService supplierService,
-// 			INotifier notifier) : base(notifier)
-// 		{
-// 			_supplierRepository = supplierRepository;
-// 			_supplierService = supplierService;
-// 		}
-//
-// 		[HttpGet]
-// 		public async Task<IEnumerable<SupplierResponse>> GetAll()
-// 		{
-// 			return (await _supplierRepository.GetAllAsync()).Select(x => new SupplierResponse()
-// 			{
-// 				Active = x.Active,
-// 				Document = x.Document,
-// 				Id = x.Id,
-// 				Name = x.Name
-// 			});
-// 		}
-//
-// 		[HttpGet("{id:guid}")]
-// 		public async Task<ActionResult<SupplierResponse>> GetById(Guid id)
-// 		{
-// 			Supplier? supplier = await _supplierRepository.GetByIdAsync(id);
-//
-// 			if (supplier == null)
-// 				return NotFound();
-//
-// 			return new SupplierResponse(supplier);
-// 		}
-//
-// 		[HttpPost]
-// 		public async Task<IEnumerable<SupplierResponse>> Add(SupplierResponse supplier)
-// 		{
-// 			throw new NotImplementedException();
-// 		}
-//
-// 		[HttpPut]
-// 		public async Task<ActionResult<SupplierResponse>> Update(Guid id, SupplierResponse supplier)
-// 		{
-// 			throw new NotImplementedException();
-// 		}
-//
-// 		[HttpDelete("{id:guid}")]
-// 		public async Task<ActionResult<SupplierResponse>> Delete(Guid id)
-// 		{
-// 			throw new NotImplementedException();
-// 		}
-//
-// 		internal static Supplier ToSupplier(SupplierRequest supplierRequest)
-// 		{
-// 			return new Supplier()
-// 			{
-// 				Active = supplierRequest.Active,
-// 				Document = supplierRequest.Document,
-// 				Name = supplierRequest.Name,
-// 				Id = supplierRequest.Id
-// 			};
-// 		}
-// 	}
-// }
+using System.Net;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using ThreeLayers.Business.Interfaces;
+using ThreeLayers.Business.Models;
+using ThreeLayers.Contracts.Suppliers;
+using ThreeLayers.WebApi.Mappers;
+
+namespace ThreeLayers.WebAPI.Controllers;
+
+public class SuppliersController(
+    ISupplierRepository supplierRepository,
+    ISupplierService supplierService,
+    INotifier notifier,
+    ILogger<SuppliersController> logger,
+    ProblemDetailsFactory problemDetailsFactory)
+    : CustomControllerBase(
+        notifier, 
+        logger,
+        problemDetailsFactory)
+{
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<SupplierResponse>>> GetAll()
+    {
+        
+        List<Supplier> suppliers = (await supplierRepository.GetAllAsync()).ToList();
+            
+        if (suppliers.Count != 0)
+            return NotFound();
+
+        return suppliers.Select(SupplierMapper.ToResponse).ToList();
+    }
+
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<SupplierResponse>> GetById(Guid id)
+    {
+        Supplier? supplier = await supplierRepository.GetByIdAsync(id);
+
+        if (supplier == null)
+            return NotFound();
+
+        return SupplierMapper.ToResponse(supplier);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<SupplierResponse>> Add(SupplierCreateRequest supplierCreateRequest)
+    {
+        if (!ModelState.IsValid)
+            return CustomResponse(ModelState);
+
+        await supplierService.AddAsync(SupplierMapper.ToEntity(supplierCreateRequest));
+
+        return CustomResponse(HttpStatusCode.Created, supplierCreateRequest);
+    }
+
+    // [HttpPut("{id:guid}")]
+    // public async Task<IActionResult> Update(Guid id, SupplierUpdateRequest supplierUpdate)
+    // {
+    //     if (id != supplierUpdate.Id)
+    //         Notify("error");
+    //
+    //     if (!ModelState.IsValid)
+    //         return CustomResponse(ModelState);
+    //
+    //     await supplierService.UpdateAsync(SupplierMapper.ToEntity(supplierUpdate));
+    //
+    //     return CustomResponse(HttpStatusCode.NoContent);
+    // }
+
+    // [HttpDelete("{id:guid}")]
+    // public async Task<ActionResult<SupplierResponse>> Delete(Guid id)
+    // {
+    //     bool deleted = await supplierService.DeleteAsync(id);
+    //
+    //     if (!deleted)
+    //         return NotFound();
+    //
+    //     return CustomResponse(HttpStatusCode.NoContent);
+    // }
+}

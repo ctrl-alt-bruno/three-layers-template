@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using ThreeLayers.Contracts.Products;
 using ThreeLayers.Contracts.Suppliers.Addresses;
 
 namespace ThreeLayers.Contracts.Suppliers;

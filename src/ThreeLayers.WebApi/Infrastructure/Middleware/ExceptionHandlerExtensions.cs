@@ -31,8 +31,6 @@ public static class ExceptionHandlerExtensions
                 using (LogContext.PushProperty("Headers", headers, destructureObjects: true))
                 using (LogContext.PushProperty("CorrelationId", correlationId.ToString()))
                 {
-                    logger.LogError(exception, "Unhandled exception caught by middleware");
-
                     ProblemDetails problem = factory.CreateProblemDetails(
                         context,
                         statusCode: 500,

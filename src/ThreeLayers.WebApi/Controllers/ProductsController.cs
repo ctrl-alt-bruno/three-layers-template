@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using ThreeLayers.Business.Interfaces;
 using ThreeLayers.Business.Models;
-using ThreeLayers.Contracts;
 using ThreeLayers.Contracts.Products;
 using ThreeLayers.WebApi.Mappers;
 

@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 namespace ThreeLayers.Contracts.Suppliers.Addresses;
 
 public class AddressResponse

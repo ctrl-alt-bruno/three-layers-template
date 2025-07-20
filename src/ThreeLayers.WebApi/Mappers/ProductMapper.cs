@@ -1,5 +1,4 @@
 using ThreeLayers.Business.Models;
-using ThreeLayers.Contracts;
 using ThreeLayers.Contracts.Products;
 
 namespace ThreeLayers.WebApi.Mappers;

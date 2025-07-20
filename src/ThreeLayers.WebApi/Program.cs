@@ -1,10 +1,6 @@
-using System.Diagnostics;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Primitives;
-using Serilog.Context;
+using Serilog;
 using ThreeLayers.Data.Context;
 using ThreeLayers.WebAPI.Configuration;
 using ThreeLayers.WebAPI.Infrastructure.Errors;
@@ -19,6 +15,15 @@ public class Program
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
         {
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(builder.Configuration)
+                .Enrich.FromLogContext()
+                .CreateLogger();
+
+            builder.Host.UseSerilog();
+
+            builder.Host.UseSerilog();
+            
             builder.Services.AddAuthorization();
 
             builder.Services.AddSwaggerDocumentation();
@@ -52,5 +57,7 @@ public class Program
 
             app.Run();
         }
+        
+        Log.CloseAndFlush();
     }
 }

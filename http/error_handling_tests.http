@@ -1,0 +1,135 @@
+@WebAPI_HostAddress = http://localhost:5001
+
+### Test 1: GET all products (200 OK - should return empty array or list of products)
+GET {{WebAPI_HostAddress}}/api/products
+Accept: application/json
+
+###
+
+### Test 2: GET non-existent product (404 Not Found)
+GET {{WebAPI_HostAddress}}/api/products/00000000-0000-0000-0000-000000000000
+Accept: application/json
+
+###
+
+### Test 3: POST invalid product data (400 Bad Request - validation errors)
+POST {{WebAPI_HostAddress}}/api/products
+Content-Type: application/json
+
+{
+  "name": "",
+  "description": "",
+  "value": -1
+}
+
+###
+
+### Test 4: POST valid product data (201 Created)
+POST {{WebAPI_HostAddress}}/api/products
+Content-Type: application/json
+
+{
+  "name": "Test Product for Error Handling",
+  "description": "Product created to test error handling implementation",
+  "value": 99.99,
+  "supplier_id": "3a6898d4-6281-47bd-b0bd-68a4f98271a9"
+}
+
+###
+
+### Test 5: PUT with mismatched IDs (409 Conflict)
+PUT {{WebAPI_HostAddress}}/api/products/11111111-1111-1111-1111-111111111111
+Content-Type: application/json
+
+{
+  "id": "22222222-2222-2222-2222-222222222222",
+  "name": "Updated Product",
+  "description": "Product with mismatched ID",
+  "value": 50.00
+}
+
+###
+
+### Test 6: PUT non-existent product (404 Not Found)
+PUT {{WebAPI_HostAddress}}/api/products/99999999-9999-9999-9999-999999999999
+Content-Type: application/json
+
+{
+  "id": "99999999-9999-9999-9999-999999999999",
+  "name": "Non-existent Product",
+  "description": "This product does not exist",
+  "value": 25.00
+}
+
+###
+
+### Test 7: DELETE non-existent product (404 Not Found)
+DELETE {{WebAPI_HostAddress}}/api/products/88888888-8888-8888-8888-888888888888
+
+###
+
+### Test 8: GET all suppliers (200 OK)
+GET {{WebAPI_HostAddress}}/api/suppliers
+Accept: application/json
+
+###
+
+### Test 9: GET non-existent supplier (404 Not Found)
+GET {{WebAPI_HostAddress}}/api/suppliers/77777777-7777-7777-7777-777777777777
+Accept: application/json
+
+###
+
+### Test 10: POST duplicate supplier (409 Conflict - business rule violation)
+# First, create a supplier
+POST {{WebAPI_HostAddress}}/api/suppliers
+Content-Type: application/json
+
+{
+  "name": "Test Supplier",
+  "document": "12345678000195",
+  "supplierType": 1,
+  "address": {
+    "street": "Test Street",
+    "number": "123",
+    "complement": "Test Complement",
+    "neighborhood": "Test Neighborhood",
+    "zipCode": "12345678",
+    "city": "Test City",
+    "state": "TS"
+  }
+}
+
+###
+
+### Test 11: POST same supplier again (409 Conflict)
+POST {{WebAPI_HostAddress}}/api/suppliers
+Content-Type: application/json
+
+{
+  "name": "Another Test Supplier",
+  "document": "12345678000195",
+  "supplierType": 1,
+  "address": {
+    "street": "Another Street",
+    "number": "456",
+    "complement": "Another Complement",
+    "neighborhood": "Another Neighborhood",
+    "zipCode": "87654321",
+    "city": "Another City",
+    "state": "TS"
+  }
+}
+
+###
+
+### Test 12: POST invalid supplier data (400 Bad Request)
+POST {{WebAPI_HostAddress}}/api/suppliers
+Content-Type: application/json
+
+{
+  "name": "",
+  "document": "invalid"
+}
+
+###

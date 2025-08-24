@@ -22,13 +22,12 @@ public class SuppliersController(
     [HttpGet]
     public async Task<ActionResult<IEnumerable<SupplierResponse>>> GetAll()
     {
-        
         List<Supplier> suppliers = (await supplierRepository.GetAllAsync()).ToList();
             
-        if (suppliers.Count != 0)
-            return NotFound();
+        if (suppliers.Count == 0)
+            return Ok(new List<SupplierResponse>());
 
-        return suppliers.Select(SupplierMapper.ToResponse).ToList();
+        return Ok(suppliers.Select(SupplierMapper.ToResponse).ToList());
     }
 
     [HttpGet("{id:guid}")]
@@ -37,9 +36,9 @@ public class SuppliersController(
         Supplier? supplier = await supplierRepository.GetByIdAsync(id);
 
         if (supplier == null)
-            return NotFound();
+            return CreateNotFoundResult($"Supplier with id '{id}' was not found.");
 
-        return SupplierMapper.ToResponse(supplier);
+        return Ok(SupplierMapper.ToResponse(supplier));
     }
 
     [HttpPost]
@@ -48,9 +47,11 @@ public class SuppliersController(
         if (!ModelState.IsValid)
             return CreateCustomActionResult(ModelState);
 
-        await supplierService.AddAsync(SupplierMapper.ToEntity(supplierCreateRequest));
+        Supplier supplier = SupplierMapper.ToEntity(supplierCreateRequest);
+        await supplierService.AddAsync(supplier);
+        SupplierResponse response = SupplierMapper.ToResponse(supplier);
 
-        return CreateCustomActionResult(HttpStatusCode.Created, supplierCreateRequest);
+        return CreateCustomActionResult(nameof(GetById), new { id = supplier.Id }, response);
     }
 
     // [HttpPut("{id:guid}")]

@@ -1,3 +1,4 @@
+using ThreeLayers.Business.Exceptions;
 using ThreeLayers.Business.Interfaces;
 using ThreeLayers.Business.Models;
 using ThreeLayers.Business.Models.Validation;
@@ -23,7 +24,7 @@ public class ProductService(IProductRepository productRepository, INotifier noti
         Product? productToUpdate = await productRepository.GetByIdAsync(product.Id);
 
         if (productToUpdate == null)
-            return false;
+            throw new EntityNotFoundException("Product", product.Id);
 			 
         productToUpdate.Name = product.Name;
         productToUpdate.Description = product.Description;
@@ -40,7 +41,7 @@ public class ProductService(IProductRepository productRepository, INotifier noti
         Product? productToDelete = await productRepository.GetByIdAsync(productId);
             
         if (productToDelete == null)
-            return false;
+            throw new EntityNotFoundException("Product", productId);
             
         await productRepository.DeleteAsync(productId);
             

@@ -22,13 +22,12 @@ public class ProductsController(
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProductResponse>>> GetAll()
     {
-        
         List<Product> products = (await productRepository.GetAllAsync()).ToList();
             
-        if (products.Count != 0)
-            return NotFound();
+        if (products.Count == 0)
+            return Ok(new List<ProductResponse>());
 
-        return products.Select(ProductMapper.ToResponse).ToList();
+        return Ok(products.Select(ProductMapper.ToResponse).ToList());
     }
 
     [HttpGet("{id:guid}")]
@@ -37,9 +36,9 @@ public class ProductsController(
         Product? product = await productRepository.GetByIdAsync(id);
 
         if (product == null)
-            return NotFound();
+            return CreateNotFoundResult($"Product with id '{id}' was not found.");
 
-        return ProductMapper.ToResponse(product);
+        return Ok(ProductMapper.ToResponse(product));
     }
 
     [HttpPost]
@@ -59,7 +58,9 @@ public class ProductsController(
     public async Task<IActionResult> Update(Guid id, ProductUpdateRequest productUpdate)
     {
         if (id != productUpdate.Id)
-            Notify("error");
+        {
+            return CreateConflictResult("The ID in the URL does not match the ID in the request body.");
+        }
 
         if (!ModelState.IsValid)
             return CreateCustomActionResult(ModelState);
@@ -75,7 +76,7 @@ public class ProductsController(
         bool deleted = await productService.DeleteAsync(id);
 
         if (!deleted)
-            return NotFound();
+            return CreateNotFoundResult($"Product with id '{id}' was not found.");
 
         return CreateCustomActionResult(HttpStatusCode.NoContent);
     }

@@ -47,6 +47,85 @@ public abstract class CustomControllerBase(
         );
     }
 
+    protected ActionResult CreateNotFoundResult(string? message = null)
+    {
+        ProblemDetails problemDetails = problemDetailsFactory.CreateProblemDetails(
+            HttpContext!,
+            statusCode: (int)HttpStatusCode.NotFound,
+            title: "Not Found",
+            detail: message ?? "The requested resource was not found."
+        );
+
+        return new ObjectResult(problemDetails)
+        {
+            StatusCode = problemDetails.Status
+        };
+    }
+
+    protected ActionResult CreateConflictResult(string? message = null)
+    {
+        ProblemDetails problemDetails = problemDetailsFactory.CreateProblemDetails(
+            HttpContext!,
+            statusCode: (int)HttpStatusCode.Conflict,
+            title: "Conflict",
+            detail: message ?? "The request conflicts with the current state of the resource."
+        );
+
+        return new ObjectResult(problemDetails)
+        {
+            StatusCode = problemDetails.Status
+        };
+    }
+
+    protected ActionResult CreateUnprocessableEntityResult(IEnumerable<string>? errors = null)
+    {
+        ValidationProblemDetails problemDetails = problemDetailsFactory.CreateValidationProblemDetails(
+            HttpContext!,
+            modelStateDictionary: new ModelStateDictionary(),
+            statusCode: (int)HttpStatusCode.UnprocessableEntity,
+            title: "Unprocessable Entity",
+            detail: "The request was well-formed but contains semantic errors."
+        );
+
+        if (errors != null)
+            problemDetails.Errors.Add("validationErrors", errors.ToArray());
+
+        return new ObjectResult(problemDetails)
+        {
+            StatusCode = problemDetails.Status
+        };
+    }
+
+    protected ActionResult CreateUnauthorizedResult(string? message = null)
+    {
+        ProblemDetails problemDetails = problemDetailsFactory.CreateProblemDetails(
+            HttpContext!,
+            statusCode: (int)HttpStatusCode.Unauthorized,
+            title: "Unauthorized",
+            detail: message ?? "Authentication is required to access this resource."
+        );
+
+        return new ObjectResult(problemDetails)
+        {
+            StatusCode = problemDetails.Status
+        };
+    }
+
+    protected ActionResult CreateForbiddenResult(string? message = null)
+    {
+        ProblemDetails problemDetails = problemDetailsFactory.CreateProblemDetails(
+            HttpContext!,
+            statusCode: (int)HttpStatusCode.Forbidden,
+            title: "Forbidden",
+            detail: message ?? "You do not have permission to access this resource."
+        );
+
+        return new ObjectResult(problemDetails)
+        {
+            StatusCode = problemDetails.Status
+        };
+    }
+
     private ActionResult CreateBadRequestObjectResult()
     {
         ValidationProblemDetails problemDetails = problemDetailsFactory.CreateValidationProblemDetails(

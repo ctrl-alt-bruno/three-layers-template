@@ -1,3 +1,4 @@
+using ThreeLayers.Business.Exceptions;
 using ThreeLayers.Business.Interfaces;
 using ThreeLayers.Business.Models;
 using ThreeLayers.Business.Models.Validation;
@@ -14,8 +15,7 @@ public class SupplierService(ISupplierRepository supplierRepository, INotifier n
 
         if (supplierRepository.FindAsync(s => s.Document == supplier.Document).Result.Any())
         {
-            Notify("The supplier already exists.");
-            return;
+            throw new BusinessRuleException("A supplier with this document already exists.");
         }
 
         await supplierRepository.AddAsync(supplier);
@@ -28,8 +28,7 @@ public class SupplierService(ISupplierRepository supplierRepository, INotifier n
 
         if (supplierRepository.FindAsync(s => s.Document == supplier.Document && s.Id != supplier.Id).Result.Any())
         {
-            Notify("The supplier already exists.");
-            return;
+            throw new BusinessRuleException("A supplier with this document already exists.");
         }
 
         await supplierRepository.UpdateAsync(supplier);
@@ -41,14 +40,12 @@ public class SupplierService(ISupplierRepository supplierRepository, INotifier n
 
         if (supplier == null)
         {
-            Notify("The supplier does not exist.");
-            return;
+            throw new EntityNotFoundException("Supplier", supplierId);
         }
 
         if (supplier.Products.Any())
         {
-            Notify("The supplier has products.");
-            return;
+            throw new BusinessRuleException("Cannot delete supplier that has associated products.");
         }
 
         Address? address = await supplierRepository.GetSupplierAddressAsync(supplierId);

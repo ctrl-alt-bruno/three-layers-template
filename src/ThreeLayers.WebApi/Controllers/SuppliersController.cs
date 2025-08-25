@@ -22,24 +22,35 @@ public class SuppliersController(
     [HttpGet]
     public async Task<ActionResult<IEnumerable<SupplierResponse>>> GetAll()
     {
-        
         List<Supplier> suppliers = (await supplierRepository.GetAllAsync()).ToList();
             
-        if (suppliers.Count != 0)
-            return NotFound();
+        if (suppliers.Count == 0)
+        {
+            NotifyNotFound("No suppliers found");
+            return CreateCustomActionResult();
+        }
 
-        return suppliers.Select(SupplierMapper.ToResponse).ToList();
+        return Ok(suppliers.Select(SupplierMapper.ToResponse).ToList());
     }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<SupplierResponse>> GetById(Guid id)
     {
+        if (id == Guid.Empty)
+        {
+            Notify("Supplier ID is required");
+            return CreateCustomActionResult();
+        }
+
         Supplier? supplier = await supplierRepository.GetByIdAsync(id);
 
         if (supplier == null)
-            return NotFound();
+        {
+            NotifyNotFound("Supplier not found");
+            return CreateCustomActionResult();
+        }
 
-        return SupplierMapper.ToResponse(supplier);
+        return Ok(SupplierMapper.ToResponse(supplier));
     }
 
     [HttpPost]
@@ -48,33 +59,56 @@ public class SuppliersController(
         if (!ModelState.IsValid)
             return CreateCustomActionResult(ModelState);
 
-        await supplierService.AddAsync(SupplierMapper.ToEntity(supplierCreateRequest));
+        Supplier supplier = SupplierMapper.ToEntity(supplierCreateRequest);
+        bool success = await supplierService.AddAsync(supplier);
 
-        return CreateCustomActionResult(HttpStatusCode.Created, supplierCreateRequest);
+        if (!success)
+            return CreateCustomActionResult();
+
+        SupplierResponse response = SupplierMapper.ToResponse(supplier);
+        return CreateCustomActionResult(nameof(GetById), new { id = supplier.Id }, response);
     }
 
-    // [HttpPut("{id:guid}")]
-    // public async Task<IActionResult> Update(Guid id, SupplierUpdateRequest supplierUpdate)
-    // {
-    //     if (id != supplierUpdate.Id)
-    //         Notify("error");
-    //
-    //     if (!ModelState.IsValid)
-    //         return CustomResponse(ModelState);
-    //
-    //     await supplierService.UpdateAsync(SupplierMapper.ToEntity(supplierUpdate));
-    //
-    //     return CustomResponse(HttpStatusCode.NoContent);
-    // }
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, SupplierUpdateRequest supplierUpdate)
+    {
+        if (id == Guid.Empty)
+        {
+            Notify("Supplier ID is required");
+            return CreateCustomActionResult();
+        }
 
-    // [HttpDelete("{id:guid}")]
-    // public async Task<ActionResult<SupplierResponse>> Delete(Guid id)
-    // {
-    //     bool deleted = await supplierService.DeleteAsync(id);
-    //
-    //     if (!deleted)
-    //         return NotFound();
-    //
-    //     return CustomResponse(HttpStatusCode.NoContent);
-    // }
+        if (id != supplierUpdate.Id)
+        {
+            Notify("Supplier ID in URL does not match ID in request body");
+            return CreateCustomActionResult();
+        }
+
+        if (!ModelState.IsValid)
+            return CreateCustomActionResult(ModelState);
+
+        bool success = await supplierService.UpdateAsync(SupplierMapper.ToEntity(supplierUpdate));
+
+        if (!success)
+            return CreateCustomActionResult();
+
+        return CreateCustomActionResult(HttpStatusCode.NoContent);
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        if (id == Guid.Empty)
+        {
+            Notify("Supplier ID is required");
+            return CreateCustomActionResult();
+        }
+
+        bool success = await supplierService.DeleteAsync(id);
+
+        if (!success)
+            return CreateCustomActionResult();
+
+        return CreateCustomActionResult(HttpStatusCode.NoContent);
+    }
 }

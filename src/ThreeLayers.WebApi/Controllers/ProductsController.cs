@@ -22,24 +22,35 @@ public class ProductsController(
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProductResponse>>> GetAll()
     {
-        
         List<Product> products = (await productRepository.GetAllAsync()).ToList();
             
-        if (products.Count != 0)
-            return NotFound();
+        if (products.Count == 0)
+        {
+            NotifyNotFound("No products found");
+            return CreateCustomActionResult();
+        }
 
-        return products.Select(ProductMapper.ToResponse).ToList();
+        return Ok(products.Select(ProductMapper.ToResponse).ToList());
     }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<ProductResponse>> GetById(Guid id)
     {
+        if (id == Guid.Empty)
+        {
+            Notify("Product ID is required");
+            return CreateCustomActionResult();
+        }
+
         Product? product = await productRepository.GetByIdAsync(id);
 
         if (product == null)
-            return NotFound();
+        {
+            NotifyNotFound("Product not found");
+            return CreateCustomActionResult();
+        }
 
-        return ProductMapper.ToResponse(product);
+        return Ok(ProductMapper.ToResponse(product));
     }
 
     [HttpPost]
@@ -49,33 +60,54 @@ public class ProductsController(
             return CreateCustomActionResult(ModelState);
 
         Product product = ProductMapper.ToEntity(productCreateRequest);
-        await productService.AddAsync(product);
-        ProductResponse response = ProductMapper.ToResponse(product);
+        bool success = await productService.AddAsync(product);
+        
+        if (!success)
+            return CreateCustomActionResult();
 
+        ProductResponse response = ProductMapper.ToResponse(product);
         return CreateCustomActionResult(nameof(GetById), new { id = product.Id }, response);
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, ProductUpdateRequest productUpdate)
     {
+        if (id == Guid.Empty)
+        {
+            Notify("Product ID is required");
+            return CreateCustomActionResult();
+        }
+
         if (id != productUpdate.Id)
-            Notify("error");
+        {
+            Notify("Product ID in URL does not match ID in request body");
+            return CreateCustomActionResult();
+        }
 
         if (!ModelState.IsValid)
             return CreateCustomActionResult(ModelState);
 
-        await productService.UpdateAsync(ProductMapper.ToEntity(productUpdate));
+        bool success = await productService.UpdateAsync(ProductMapper.ToEntity(productUpdate));
+        
+        if (!success)
+            return CreateCustomActionResult();
 
         return CreateCustomActionResult(HttpStatusCode.NoContent);
     }
 
     [HttpDelete("{id:guid}")]
-    public async Task<ActionResult<ProductResponse>> Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id)
     {
-        bool deleted = await productService.DeleteAsync(id);
+        if (id == Guid.Empty)
+        {
+            Notify("Product ID is required");
+            return CreateCustomActionResult();
+        }
 
-        if (!deleted)
-            return NotFound();
+        bool success = await productService.DeleteAsync(id);
+
+        if (!success)
+            return CreateCustomActionResult();
 
         return CreateCustomActionResult(HttpStatusCode.NoContent);
     }

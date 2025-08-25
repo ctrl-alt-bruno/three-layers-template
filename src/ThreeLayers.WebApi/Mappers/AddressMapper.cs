@@ -17,19 +17,21 @@ public static class AddressMapper
         State = dto.State
     };
 
-    // public static Address ToEntity(AddressUpdateRequest dto) => new()
-    // {
-    //     Id = dto.Id,
-    //     Name = dto.Name,
-    //     Description = dto.Description,
-    //     Value = dto.Value,
-    //     SupplierId = dto.SupplierId,
-    //     Active = dto.Active
-    // };
+    public static Address ToEntity(AddressUpdateRequest dto) => new()
+    {
+        Id = dto.Id,
+        Street = dto.Street,
+        Number = dto.Number,
+        Complement = dto.Complement,
+        PostalCode = dto.PostalCode,
+        Region = dto.Region,
+        City = dto.City,
+        State = dto.State
+    };
 
     public static AddressResponse ToResponse(Address entity) => new()
     {
-        Id = Guid.NewGuid(),
+        Id = entity.Id,
         Street = entity.Street,
         Number = entity.Number,
         Complement = entity.Complement,

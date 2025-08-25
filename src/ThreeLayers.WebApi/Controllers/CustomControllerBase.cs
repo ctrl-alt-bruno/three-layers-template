@@ -27,7 +27,7 @@ public abstract class CustomControllerBase(
     protected ActionResult CreateCustomActionResult(HttpStatusCode httpStatusCode = HttpStatusCode.OK, object? result = null)
     {
         if (notifier.HasNotification())
-            return CreateBadRequestObjectResult();
+            return CreateErrorActionResult();
         
         return new ObjectResult(result)
         {
@@ -38,7 +38,7 @@ public abstract class CustomControllerBase(
     protected ActionResult CreateCustomActionResult(string actionName, object routeValues, object result)
     {
         if (notifier.HasNotification())
-            return CreateBadRequestObjectResult();
+            return CreateErrorActionResult();
         
         return CreatedAtAction(
             actionName,
@@ -47,18 +47,14 @@ public abstract class CustomControllerBase(
         );
     }
 
-    private ActionResult CreateBadRequestObjectResult()
+    private ActionResult CreateErrorActionResult()
     {
-        ValidationProblemDetails problemDetails = problemDetailsFactory.CreateValidationProblemDetails(
-            HttpContext!,
-            modelStateDictionary: new ModelStateDictionary(),
-            statusCode: (int)HttpStatusCode.BadRequest,
-            title: "Bad Request",
-            detail: "See 'errors' for details.",
-            instance: HttpContext?.Request?.Path
-        );
-
-        problemDetails.Errors.Add("messages", notifier.GetNotifications().Select(n => n.Message).ToArray());
+        var notifications = notifier.GetNotifications();
+        
+        // Determine the appropriate HTTP status code based on notification types
+        HttpStatusCode statusCode = DetermineStatusCode(notifications);
+        
+        var problemDetails = CreateProblemDetails(statusCode, notifications);
 
         return new ObjectResult(problemDetails)
         {
@@ -66,8 +62,71 @@ public abstract class CustomControllerBase(
         };
     }
 
-    protected void Notify(string message)
+    private HttpStatusCode DetermineStatusCode(List<Notification> notifications)
     {
-        notifier.Handle(new Notification(message));
+        // Priority order: NotFound > Conflict > BusinessRule > Validation > BadRequest
+        if (notifications.Any(n => n.Type == NotificationType.NotFound))
+            return HttpStatusCode.NotFound;
+        
+        if (notifications.Any(n => n.Type == NotificationType.Conflict))
+            return HttpStatusCode.Conflict;
+        
+        if (notifications.Any(n => n.Type == NotificationType.BusinessRule))
+            return HttpStatusCode.UnprocessableEntity;
+        
+        if (notifications.Any(n => n.Type == NotificationType.Validation))
+            return HttpStatusCode.BadRequest;
+        
+        return HttpStatusCode.BadRequest; // Default for BadRequest type
+    }
+
+    private ValidationProblemDetails CreateProblemDetails(HttpStatusCode statusCode, List<Notification> notifications)
+    {
+        string title = statusCode switch
+        {
+            HttpStatusCode.NotFound => "Not Found",
+            HttpStatusCode.Conflict => "Conflict",
+            HttpStatusCode.UnprocessableEntity => "Business Rule Violation",
+            HttpStatusCode.BadRequest => "Bad Request",
+            _ => "Error"
+        };
+
+        var problemDetails = problemDetailsFactory.CreateValidationProblemDetails(
+            HttpContext!,
+            modelStateDictionary: new ModelStateDictionary(),
+            statusCode: (int)statusCode,
+            title: title,
+            detail: "See 'errors' for details.",
+            instance: HttpContext?.Request?.Path
+        );
+
+        // Group messages by notification type
+        foreach (var typeGroup in notifications.GroupBy(n => n.Type))
+        {
+            var key = typeGroup.Key.ToString().ToLowerInvariant();
+            problemDetails.Errors.Add(key, typeGroup.Select(n => n.Message).ToArray());
+        }
+
+        return problemDetails;
+    }
+
+    protected void Notify(string message, NotificationType type = NotificationType.Validation)
+    {
+        notifier.Handle(new Notification(message, type));
+    }
+
+    protected void NotifyNotFound(string message)
+    {
+        notifier.Handle(new Notification(message, NotificationType.NotFound));
+    }
+
+    protected void NotifyConflict(string message)
+    {
+        notifier.Handle(new Notification(message, NotificationType.Conflict));
+    }
+
+    protected void NotifyBusinessRule(string message)
+    {
+        notifier.Handle(new Notification(message, NotificationType.BusinessRule));
     }
 }

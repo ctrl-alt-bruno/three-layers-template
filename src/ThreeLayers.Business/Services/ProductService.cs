@@ -4,7 +4,7 @@ using ThreeLayers.Business.Models.Validation;
 
 namespace ThreeLayers.Business.Services;
 
-public class ProductService(IProductRepository productRepository, INotifier notifier)
+public class ProductService(IProductRepository productRepository, ISupplierRepository supplierRepository, INotifier notifier)
     : BaseService(notifier), IProductService
 {
     public async Task<bool> AddAsync(Product product)
@@ -16,6 +16,19 @@ public class ProductService(IProductRepository productRepository, INotifier noti
         if (product.SupplierId == Guid.Empty)
         {
             NotifyBusinessRule("Supplier ID is required");
+            return false;
+        }
+
+        Supplier? supplier = await supplierRepository.GetByIdAsync(product.SupplierId);
+        if (supplier == null)
+        {
+            NotifyBusinessRule("The specified supplier does not exist");
+            return false;
+        }
+
+        if (!supplier.Active)
+        {
+            NotifyBusinessRule("Cannot add product to an inactive supplier");
             return false;
         }
 
@@ -42,6 +55,23 @@ public class ProductService(IProductRepository productRepository, INotifier noti
         {
             NotifyNotFound("Product");
             return false;
+        }
+
+        // Check if supplier exists and is active (if supplier is being changed)
+        if (product.SupplierId != existingProduct.SupplierId)
+        {
+            Supplier? supplier = await supplierRepository.GetByIdAsync(product.SupplierId);
+            if (supplier == null)
+            {
+                NotifyBusinessRule("The specified supplier does not exist");
+                return false;
+            }
+
+            if (!supplier.Active)
+            {
+                NotifyBusinessRule("Cannot move product to an inactive supplier");
+                return false;
+            }
         }
 
         // Update properties

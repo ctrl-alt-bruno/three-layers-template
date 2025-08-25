@@ -12,6 +12,7 @@ public static class ProductMapper
         Description = dto.Description,
         Value = dto.Value,
         SupplierId = dto.SupplierId,
+        CreationDate = DateTime.UtcNow,
         Active = false
     };
 

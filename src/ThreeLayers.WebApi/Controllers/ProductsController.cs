@@ -13,17 +13,14 @@ public class ProductsController(
     IProductService productService,
     INotifier notifier,
     ILogger<ProductsController> logger,
-    ProblemDetailsFactory problemDetailsFactory)
-    : CustomControllerBase(
-        notifier, 
-        logger,
-        problemDetailsFactory)
+    ProblemDetailsFactory problemDetailsFactory
+) : CustomControllerBase(notifier, logger, problemDetailsFactory)
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProductResponse>>> GetAll()
     {
         List<Product> products = (await productRepository.GetAllAsync()).ToList();
-            
+
         if (products.Count == 0)
         {
             NotifyNotFound("No products found");
@@ -61,7 +58,7 @@ public class ProductsController(
 
         Product product = ProductMapper.ToEntity(productCreateRequest);
         bool success = await productService.AddAsync(product);
-        
+
         if (!success)
             return CreateCustomActionResult();
 
@@ -88,7 +85,7 @@ public class ProductsController(
             return CreateCustomActionResult(ModelState);
 
         bool success = await productService.UpdateAsync(ProductMapper.ToEntity(productUpdate));
-        
+
         if (!success)
             return CreateCustomActionResult();
 

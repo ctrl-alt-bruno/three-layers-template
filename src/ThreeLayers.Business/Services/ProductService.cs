@@ -39,7 +39,7 @@ public class ProductService(IProductRepository productRepository, ISupplierRepos
         }
         catch (Exception ex)
         {
-            Notify($"Error adding product: {ex.Message}", Notifications.NotificationType.BadRequest);
+            Notify($"Error adding product: {ex.Message}", Notifications.NotificationType.UnexpectedError);
             return false;
         }
     }
@@ -88,7 +88,7 @@ public class ProductService(IProductRepository productRepository, ISupplierRepos
         }
         catch (Exception ex)
         {
-            Notify($"Error updating product: {ex.Message}", Notifications.NotificationType.BadRequest);
+            Notify($"Error updating product: {ex.Message}", Notifications.NotificationType.UnexpectedError);
             return false;
         }
     }
@@ -97,7 +97,7 @@ public class ProductService(IProductRepository productRepository, ISupplierRepos
     {
         if (productId == Guid.Empty)
         {
-            Notify("Product ID is required", Notifications.NotificationType.BadRequest);
+            Notify("Product ID is required", Notifications.NotificationType.InvalidArgument);
             return false;
         }
 
@@ -116,7 +116,7 @@ public class ProductService(IProductRepository productRepository, ISupplierRepos
         }
         catch (Exception ex)
         {
-            Notify($"Error deleting product: {ex.Message}", Notifications.NotificationType.BadRequest);
+            Notify($"Error deleting product: {ex.Message}", Notifications.NotificationType.UnexpectedError);
             return false;
         }
     }

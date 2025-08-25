@@ -6,5 +6,6 @@ public enum NotificationType
     BusinessRule,
     NotFound,
     Conflict,
-    BadRequest
+    InvalidArgument,
+    UnexpectedError
 }

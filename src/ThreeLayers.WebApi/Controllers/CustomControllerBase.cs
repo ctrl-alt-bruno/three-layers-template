@@ -31,7 +31,7 @@ public abstract class CustomControllerBase(
     {
         if (notifier.HasNotification())
             return CreateErrorActionResult();
-
+        
         return new ObjectResult(result) { StatusCode = Convert.ToInt32(httpStatusCode) };
     }
 

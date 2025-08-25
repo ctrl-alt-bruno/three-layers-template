@@ -14,7 +14,7 @@ public abstract class BaseService(INotifier notifier)
     {
         if (entity == null)
         {
-            Notify("Entity cannot be null", NotificationType.BadRequest);
+            Notify("Entity cannot be null", NotificationType.InvalidArgument);
             return false;
         }
 

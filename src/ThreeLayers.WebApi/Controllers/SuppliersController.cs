@@ -13,28 +13,28 @@ public class SuppliersController(
     ISupplierService supplierService,
     INotifier notifier,
     ILogger<SuppliersController> logger,
-    ProblemDetailsFactory problemDetailsFactory)
-    : CustomControllerBase(
-        notifier, 
-        logger,
-        problemDetailsFactory)
+    ProblemDetailsFactory problemDetailsFactory
+) : CustomControllerBase(notifier, logger, problemDetailsFactory)
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<SupplierResponse>>> GetAll()
     {
         List<Supplier> suppliers = (await supplierRepository.GetAllAsync()).ToList();
-            
+
         if (suppliers.Count == 0)
         {
             NotifyNotFound("No suppliers found");
             return CreateCustomActionResult();
         }
 
-        return Ok(suppliers.Select(SupplierMapper.ToResponse).ToList());
+        return Ok(suppliers.Select(entity => SupplierMapper.ToResponse(entity)).ToList());
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<SupplierResponse>> GetById(Guid id)
+    public async Task<ActionResult<SupplierResponse>> GetById(
+        Guid id,
+        [FromQuery(Name = "include")] string? include
+    )
     {
         if (id == Guid.Empty)
         {
@@ -42,7 +42,24 @@ public class SuppliersController(
             return CreateCustomActionResult();
         }
 
-        Supplier? supplier = await supplierRepository.GetByIdAsync(id);
+        HashSet<string> includes = (include ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(x => x.ToLowerInvariant())
+            .ToHashSet();
+
+        bool includeAddress = includes.Contains("address");
+        bool includeProducts = includes.Contains("products");
+
+        Supplier? supplier = null;
+
+        if (includeAddress && includeProducts)
+            supplier = await supplierRepository.GetSupplierAndProductsAndAddressAsync(id);
+        else if (includeProducts)
+            supplier = await supplierRepository.GetSupplierAndProductsAsync(id);
+        else if (includeAddress)
+            supplier = await supplierRepository.GetSupplierAndAddressAsync(id);
+        else
+            supplier = await supplierRepository.GetByIdAsync(id);
 
         if (supplier == null)
         {
@@ -54,7 +71,9 @@ public class SuppliersController(
     }
 
     [HttpPost]
-    public async Task<ActionResult<SupplierResponse>> Add(SupplierCreateRequest supplierCreateRequest)
+    public async Task<ActionResult<SupplierResponse>> Add(
+        SupplierCreateRequest supplierCreateRequest
+    )
     {
         if (!ModelState.IsValid)
             return CreateCustomActionResult(ModelState);

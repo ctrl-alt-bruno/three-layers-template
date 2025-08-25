@@ -5,20 +5,30 @@ using ThreeLayers.Data.Context;
 
 namespace ThreeLayers.Data.Repository;
 
-public class SupplierRepository(MyDbContext dbContext) : Repository<Supplier>(dbContext), ISupplierRepository
+public class SupplierRepository(MyDbContext dbContext)
+    : Repository<Supplier>(dbContext),
+        ISupplierRepository
 {
+    public async Task<Supplier?> GetSupplierAndProductsAsync(Guid supplierId)
+    {
+        return await DbContext
+            .Suppliers.AsNoTracking()
+            .Include(x => x.Products)
+            .FirstOrDefaultAsync(x => x.Id == supplierId);
+    }
+
     public async Task<Supplier?> GetSupplierAndAddressAsync(Guid supplierId)
     {
-        return await DbContext.Suppliers
-            .AsNoTracking()
+        return await DbContext
+            .Suppliers.AsNoTracking()
             .Include(x => x.Address)
             .FirstOrDefaultAsync(x => x.Id == supplierId);
     }
 
     public async Task<Supplier?> GetSupplierAndProductsAndAddressAsync(Guid supplierId)
     {
-        return await DbContext.Suppliers
-            .AsNoTracking()
+        return await DbContext
+            .Suppliers.AsNoTracking()
             .Include(x => x.Products)
             .Include(x => x.Address)
             .FirstOrDefaultAsync(x => x.Id == supplierId);
@@ -26,8 +36,8 @@ public class SupplierRepository(MyDbContext dbContext) : Repository<Supplier>(db
 
     public async Task<Address?> GetSupplierAddressAsync(Guid supplierId)
     {
-        return await DbContext.Addresses
-            .AsNoTracking()
+        return await DbContext
+            .Addresses.AsNoTracking()
             .FirstOrDefaultAsync(x => x.SupplierId == supplierId);
     }
 

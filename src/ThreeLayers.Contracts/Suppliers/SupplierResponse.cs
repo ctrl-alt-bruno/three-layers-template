@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using ThreeLayers.Contracts.Products;
 using ThreeLayers.Contracts.Suppliers.Addresses;
 
@@ -6,26 +7,32 @@ namespace ThreeLayers.Contracts.Suppliers;
 
 public class SupplierResponse
 {
-	public Guid Id { get; set; }
+    [JsonPropertyName("id")]
+    public Guid Id { get; set; }
 
-	[Required]
-	[StringLength(100)]
-	public string Name { get; set; }
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
 
-	[Required]
-	[StringLength(20)]
-	public string Document { get; set; }
+    [JsonPropertyName("document")]
+    public string Document { get; set; }
 
-	public int SupplierType { get; set; }
+    [JsonPropertyName("type")]
+    public short SupplierType { get; set; }
 
-	public bool Active { get; set; }
+    [JsonPropertyName("active")]
+    public bool Active { get; set; }
 
-	public AddressResponse? Address { get; set; }
+    [JsonPropertyName("address")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AddressResponse? Address { get; set; }
 
-	public IEnumerable<ProductResponse> Products { get; set; } = new List<ProductResponse>();
+    [JsonPropertyName("products")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IEnumerable<ProductResponse>? Products { get; set; }
 
-	public SupplierResponse()
-	{
-		Name = Document = String.Empty;
-	}
+    public SupplierResponse()
+    {
+        Name = Document = String.Empty;
+        Products = new List<ProductResponse>();
+    }
 }

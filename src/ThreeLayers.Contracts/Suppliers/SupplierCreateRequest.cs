@@ -22,5 +22,5 @@ public class SupplierCreateRequest
 
 	[Required]
 	[JsonPropertyName("address")]
-	public AddressCreateRequest? Address { get; set; }
+	public required AddressCreateRequest Address { get; set; }
 }

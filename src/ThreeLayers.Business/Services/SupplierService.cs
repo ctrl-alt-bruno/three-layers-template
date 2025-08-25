@@ -26,7 +26,7 @@ public class SupplierService(ISupplierRepository supplierRepository, INotifier n
         }
         catch (Exception ex)
         {
-            Notify($"Error adding supplier: {ex.Message}", Notifications.NotificationType.BadRequest);
+            Notify($"Error adding supplier: {ex.Message}", Notifications.NotificationType.UnexpectedError);
             return false;
         }
     }
@@ -57,7 +57,7 @@ public class SupplierService(ISupplierRepository supplierRepository, INotifier n
         }
         catch (Exception ex)
         {
-            Notify($"Error updating supplier: {ex.Message}", Notifications.NotificationType.BadRequest);
+            Notify($"Error updating supplier: {ex.Message}", Notifications.NotificationType.UnexpectedError);
             return false;
         }
     }
@@ -66,7 +66,7 @@ public class SupplierService(ISupplierRepository supplierRepository, INotifier n
     {
         if (supplierId == Guid.Empty)
         {
-            Notify("Supplier ID is required", Notifications.NotificationType.BadRequest);
+            Notify("Supplier ID is required", Notifications.NotificationType.InvalidArgument);
             return false;
         }
 
@@ -98,7 +98,7 @@ public class SupplierService(ISupplierRepository supplierRepository, INotifier n
         }
         catch (Exception ex)
         {
-            Notify($"Error deleting supplier: {ex.Message}", Notifications.NotificationType.BadRequest);
+            Notify($"Error deleting supplier: {ex.Message}", Notifications.NotificationType.UnexpectedError);
             return false;
         }
     }

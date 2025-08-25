@@ -1,4 +1,4 @@
-@WebAPI_HostAddress = http://localhost:5001
+@WebAPI_HostAddress = https://localhost:7263
 
 GET {{WebAPI_HostAddress}}/api/products
 Accept: application/json
@@ -17,5 +17,5 @@ Content-Type: application/json
   "name": "{{$random.commerce.productName}}",
   "description": "{{$random.commerce.productName}}",
   "value": 10,
-  "supplier_id": "3a6898d4-6281-47bd-b0bd-68a4f98271a9"
+  "supplier_id": "2f99e135-a685-45c4-a6ed-529b2e3d4a27"
 }

@@ -1,11 +1,11 @@
-@WebAPI_HostAddress = http://localhost:5235
+@WebAPI_HostAddress = https://localhost:7263
 
 GET {{WebAPI_HostAddress}}/api/suppliers
 Accept: application/json
 
 ###
 
-GET {{WebAPI_HostAddress}}/api/suppliers/{{$random.uuid}}
+GET {{WebAPI_HostAddress}}/api/suppliers/965bdeef-102b-4866-ae50-c0a1ab3a0124
 Accept: application/json
 
 ###
@@ -15,7 +15,7 @@ Content-Type: application/json
 
 {
   "name": "{{$random.name.fullName}}",
-  "document": "12345678901",
+  "document": "36601159836",
   "supplier_type": 1,
   "address":
   {

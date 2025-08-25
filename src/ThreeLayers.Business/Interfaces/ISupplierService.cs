@@ -4,7 +4,7 @@ namespace ThreeLayers.Business.Interfaces;
 
 public interface ISupplierService : IDisposable
 {
-    Task AddAsync(Supplier supplier);
-    Task UpdateAsync(Supplier supplier);
-    Task DeleteAsync(Guid supplierId);
+    Task<bool> AddAsync(Supplier supplier);
+    Task<bool> UpdateAsync(Supplier supplier);
+    Task<bool> DeleteAsync(Guid supplierId);
 }

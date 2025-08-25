@@ -12,8 +12,8 @@ namespace ThreeLayers.WebAPI.Controllers;
 public abstract class CustomControllerBase(
     INotifier notifier,
     ILogger<CustomControllerBase> logger,
-    ProblemDetailsFactory problemDetailsFactory)
-    : ControllerBase
+    ProblemDetailsFactory problemDetailsFactory
+) : ControllerBase
 {
     protected ActionResult CreateCustomActionResult(ModelStateDictionary modelStateDictionary)
     {
@@ -24,50 +24,114 @@ public abstract class CustomControllerBase(
         return CreateCustomActionResult();
     }
 
-    protected ActionResult CreateCustomActionResult(HttpStatusCode httpStatusCode = HttpStatusCode.OK, object? result = null)
+    protected ActionResult CreateCustomActionResult(
+        HttpStatusCode httpStatusCode = HttpStatusCode.OK,
+        object? result = null
+    )
     {
         if (notifier.HasNotification())
-            return CreateBadRequestObjectResult();
+            return CreateErrorActionResult();
         
-        return new ObjectResult(result)
-        {
-            StatusCode = Convert.ToInt32(httpStatusCode)
-        };
+        return new ObjectResult(result) { StatusCode = Convert.ToInt32(httpStatusCode) };
     }
-    
-    protected ActionResult CreateCustomActionResult(string actionName, object routeValues, object result)
+
+    protected ActionResult CreateCustomActionResult(
+        string actionName,
+        object routeValues,
+        object result
+    )
     {
         if (notifier.HasNotification())
-            return CreateBadRequestObjectResult();
-        
-        return CreatedAtAction(
-            actionName,
-            routeValues,
-            result
-        );
+            return CreateErrorActionResult();
+
+        return CreatedAtAction(actionName, routeValues, result);
     }
 
-    private ActionResult CreateBadRequestObjectResult()
+    private ActionResult CreateErrorActionResult()
     {
-        ValidationProblemDetails problemDetails = problemDetailsFactory.CreateValidationProblemDetails(
-            HttpContext!,
-            modelStateDictionary: new ModelStateDictionary(),
-            statusCode: (int)HttpStatusCode.BadRequest,
-            title: "Bad Request",
-            detail: "See 'errors' for details.",
-            instance: HttpContext?.Request?.Path
-        );
+        List<Notification> notifications = notifier.GetNotifications();
 
-        problemDetails.Errors.Add("messages", notifier.GetNotifications().Select(n => n.Message).ToArray());
+        // Determine the appropriate HTTP status code based on notification types
+        HttpStatusCode statusCode = DetermineStatusCode(notifications);
 
-        return new ObjectResult(problemDetails)
+        ValidationProblemDetails problemDetails = CreateProblemDetails(statusCode, notifications);
+
+        return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+    }
+
+    private HttpStatusCode DetermineStatusCode(List<Notification> notifications)
+    {
+        // Priority order: NotFound > Conflict > BusinessRule > Validation > BadRequest
+        if (notifications.Any(n => n.Type == NotificationType.NotFound))
+            return HttpStatusCode.NotFound;
+
+        if (notifications.Any(n => n.Type == NotificationType.Conflict))
+            return HttpStatusCode.Conflict;
+
+        if (notifications.Any(n => n.Type == NotificationType.BusinessRule))
+            return HttpStatusCode.UnprocessableEntity;
+
+        if (notifications.Any(n => n.Type == NotificationType.Validation))
+            return HttpStatusCode.BadRequest;
+
+        return HttpStatusCode.BadRequest; // Default for BadRequest type
+    }
+
+    private ValidationProblemDetails CreateProblemDetails(
+        HttpStatusCode statusCode,
+        List<Notification> notifications
+    )
+    {
+        string title = statusCode switch
         {
-            StatusCode = problemDetails.Status
+            HttpStatusCode.NotFound => "Not Found",
+            HttpStatusCode.Conflict => "Conflict",
+            HttpStatusCode.UnprocessableEntity => "Business Rule Violation",
+            HttpStatusCode.BadRequest => "Bad Request",
+            _ => "Error",
         };
+
+        ValidationProblemDetails problemDetails =
+            problemDetailsFactory.CreateValidationProblemDetails(
+                HttpContext!,
+                modelStateDictionary: new ModelStateDictionary(),
+                statusCode: (int)statusCode,
+                title: title,
+                detail: "See 'errors' for details.",
+                instance: HttpContext?.Request?.Path
+            );
+
+        // Group messages by notification type
+        foreach (
+            IGrouping<NotificationType, Notification> typeGroup in notifications.GroupBy(n =>
+                n.Type
+            )
+        )
+        {
+            string key = typeGroup.Key.ToString().ToLowerInvariant();
+            problemDetails.Errors.Add(key, typeGroup.Select(n => n.Message).ToArray());
+        }
+
+        return problemDetails;
     }
 
-    protected void Notify(string message)
+    protected void Notify(string message, NotificationType type = NotificationType.Validation)
     {
-        notifier.Handle(new Notification(message));
+        notifier.Handle(new Notification(message, type));
+    }
+
+    protected void NotifyNotFound(string message)
+    {
+        notifier.Handle(new Notification(message, NotificationType.NotFound));
+    }
+
+    protected void NotifyConflict(string message)
+    {
+        notifier.Handle(new Notification(message, NotificationType.Conflict));
+    }
+
+    protected void NotifyBusinessRule(string message)
+    {
+        notifier.Handle(new Notification(message, NotificationType.BusinessRule));
     }
 }

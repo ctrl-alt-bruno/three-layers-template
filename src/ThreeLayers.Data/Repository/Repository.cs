@@ -7,7 +7,8 @@ using ThreeLayers.Data.Context;
 namespace ThreeLayers.Data.Repository;
 
 public abstract class Repository<TEntity>(MyDbContext dbContext)
-    : ICommandRepository<TEntity>, IQueryRepository<TEntity>
+    : ICommandRepository<TEntity>,
+        IQueryRepository<TEntity>
     where TEntity : Entity, new()
 {
     protected readonly MyDbContext DbContext = dbContext;
@@ -23,7 +24,9 @@ public abstract class Repository<TEntity>(MyDbContext dbContext)
         return await DbSet.ToListAsync();
     }
 
-    public virtual async Task<IEnumerable<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate)
+    public virtual async Task<IEnumerable<TEntity>> FindAsync(
+        Expression<Func<TEntity, bool>> predicate
+    )
     {
         return await DbSet.AsNoTracking().Where(predicate).ToListAsync();
     }

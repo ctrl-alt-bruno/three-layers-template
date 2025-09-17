@@ -7,9 +7,11 @@ using Microsoft.Extensions.Options;
 
 namespace ThreeLayers.WebAPI.Infrastructure.Errors;
 
-public class CustomProblemDetailsFactory(IOptions<ApiBehaviorOptions> options) : ProblemDetailsFactory
+public class CustomProblemDetailsFactory(IOptions<ApiBehaviorOptions> options)
+    : ProblemDetailsFactory
 {
-    private readonly ApiBehaviorOptions _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+    private readonly ApiBehaviorOptions _options =
+        options?.Value ?? throw new ArgumentNullException(nameof(options));
 
     public override ProblemDetails CreateProblemDetails(
         HttpContext httpContext,
@@ -17,7 +19,8 @@ public class CustomProblemDetailsFactory(IOptions<ApiBehaviorOptions> options) :
         string? title = null,
         string? type = null,
         string? detail = null,
-        string? instance = null)
+        string? instance = null
+    )
     {
         statusCode ??= 500;
 
@@ -27,20 +30,22 @@ public class CustomProblemDetailsFactory(IOptions<ApiBehaviorOptions> options) :
             Title = title ?? ReasonPhrases.GetReasonPhrase(statusCode.Value),
             Type = type,
             Detail = detail,
-            Instance = instance ?? httpContext?.Request?.Path
+            Instance = instance ?? httpContext?.Request?.Path,
         };
 
         ApplyDefaults(httpContext, problemDetails, statusCode.Value);
         return problemDetails;
     }
 
-    public override ValidationProblemDetails CreateValidationProblemDetails(HttpContext httpContext,
+    public override ValidationProblemDetails CreateValidationProblemDetails(
+        HttpContext httpContext,
         ModelStateDictionary modelStateDictionary,
         int? statusCode = null,
         string? title = null,
         string? type = null,
         string? detail = null,
-        string? instance = null)
+        string? instance = null
+    )
     {
         if (modelStateDictionary == null)
         {
@@ -49,7 +54,9 @@ public class CustomProblemDetailsFactory(IOptions<ApiBehaviorOptions> options) :
 
         statusCode ??= 400;
 
-        ValidationProblemDetails validationProblemDetails = new ValidationProblemDetails(modelStateDictionary)
+        ValidationProblemDetails validationProblemDetails = new ValidationProblemDetails(
+            modelStateDictionary
+        )
         {
             Status = statusCode,
             Type = type,
@@ -62,11 +69,20 @@ public class CustomProblemDetailsFactory(IOptions<ApiBehaviorOptions> options) :
         return validationProblemDetails;
     }
 
-    private void ApplyDefaults(HttpContext httpContext, ProblemDetails problemDetails, int statusCode)
+    private void ApplyDefaults(
+        HttpContext httpContext,
+        ProblemDetails problemDetails,
+        int statusCode
+    )
     {
         problemDetails.Status ??= statusCode;
 
-        if (_options.ClientErrorMapping.TryGetValue(statusCode, out ClientErrorData? clientErrorData))
+        if (
+            _options.ClientErrorMapping.TryGetValue(
+                statusCode,
+                out ClientErrorData? clientErrorData
+            )
+        )
         {
             problemDetails.Title ??= clientErrorData.Title;
             problemDetails.Type ??= clientErrorData.Link;

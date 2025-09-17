@@ -14,15 +14,21 @@ public static class ExceptionHandlerExtensions
         {
             errorApp.Run(async context =>
             {
-                ILogger<Program> logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-                ProblemDetailsFactory factory = context.RequestServices.GetRequiredService<ProblemDetailsFactory>();
+                ILogger<Program> logger = context.RequestServices.GetRequiredService<
+                    ILogger<Program>
+                >();
+                ProblemDetailsFactory factory =
+                    context.RequestServices.GetRequiredService<ProblemDetailsFactory>();
                 HttpRequest request = context.Request;
                 Exception? exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
 
                 string traceId = context.TraceIdentifier;
                 string? ip = context.Connection.RemoteIpAddress?.ToString();
                 string userAgent = request.Headers["User-Agent"].ToString();
-                Dictionary<string, string> headers = request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString());
+                Dictionary<string, string> headers = request.Headers.ToDictionary(
+                    h => h.Key,
+                    h => h.Value.ToString()
+                );
                 request.Headers.TryGetValue("X-Correlation-ID", out StringValues correlationId);
 
                 using (LogContext.PushProperty("TraceId", traceId))

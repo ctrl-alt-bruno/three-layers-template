@@ -4,8 +4,9 @@ using Serilog.Context;
 namespace ThreeLayers.WebAPI.Infrastructure.Logs;
 
 public class RequestLoggingMiddleware(
-    RequestDelegate next, 
-    ILogger<RequestLoggingMiddleware> logger)
+    RequestDelegate next,
+    ILogger<RequestLoggingMiddleware> logger
+)
 {
     public async Task InvokeAsync(HttpContext context)
     {
@@ -14,8 +15,13 @@ public class RequestLoggingMiddleware(
         string? ip = context.Connection.RemoteIpAddress?.ToString();
         string userAgent = request.Headers["User-Agent"].ToString();
         string? contentType = request.ContentType;
-        string? queryString = request.QueryString.HasValue ? request.QueryString.Value : string.Empty;
-        Dictionary<string, string> headers = request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString());
+        string? queryString = request.QueryString.HasValue
+            ? request.QueryString.Value
+            : string.Empty;
+        Dictionary<string, string> headers = request.Headers.ToDictionary(
+            h => h.Key,
+            h => h.Value.ToString()
+        );
 
         // Correlation ID (se enviado por header)
         string? correlationId = null;
@@ -32,7 +38,11 @@ public class RequestLoggingMiddleware(
         using (LogContext.PushProperty("QueryString", queryString))
         using (LogContext.PushProperty("CorrelationId", correlationId))
         {
-            logger.LogInformation("Incoming request: {Method} {Path}", request.Method, request.Path);
+            logger.LogInformation(
+                "Incoming request: {Method} {Path}",
+                request.Method,
+                request.Path
+            );
 
             await next(context);
 

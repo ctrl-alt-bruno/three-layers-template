@@ -8,12 +8,15 @@ public static class SwaggerConfiguration
     {
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo
-            {
-                Title = "ProtonSEC API",
-                Version = "v1",
-                Description = "API do projeto ProtonSEC usando arquitetura em três camadas"
-            });
+            c.SwaggerDoc(
+                "v1",
+                new OpenApiInfo
+                {
+                    Title = "ProtonSEC API",
+                    Version = "v1",
+                    Description = "API do projeto ProtonSEC usando arquitetura em três camadas",
+                }
+            );
         });
 
         return services;

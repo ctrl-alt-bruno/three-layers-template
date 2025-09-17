@@ -21,7 +21,7 @@ public class ProductUpdateRequest
     [Required]
     [JsonPropertyName("value")]
     public decimal Value { get; set; }
-        
+
     [Required]
     [JsonPropertyName("active")]
     public bool Active { get; set; }

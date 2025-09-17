@@ -3,7 +3,8 @@ using ThreeLayers.Business.Models;
 
 namespace ThreeLayers.Business.Interfaces;
 
-public interface IQueryRepository<TEntity> : IDisposable where TEntity : Entity
+public interface IQueryRepository<TEntity> : IDisposable
+    where TEntity : Entity
 {
     Task<TEntity?> GetByIdAsync(Guid id);
     Task<IEnumerable<TEntity>> GetAllAsync();

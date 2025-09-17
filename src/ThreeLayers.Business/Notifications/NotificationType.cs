@@ -7,5 +7,5 @@ public enum NotificationType
     NotFound,
     Conflict,
     InvalidArgument,
-    UnexpectedError
+    UnexpectedError,
 }

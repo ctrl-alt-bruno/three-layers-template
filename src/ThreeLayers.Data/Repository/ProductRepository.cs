@@ -5,7 +5,9 @@ using ThreeLayers.Data.Context;
 
 namespace ThreeLayers.Data.Repository;
 
-public class ProductRepository(MyDbContext dbContext) : Repository<Product>(dbContext), IProductRepository
+public class ProductRepository(MyDbContext dbContext)
+    : Repository<Product>(dbContext),
+        IProductRepository
 {
     public async Task<IEnumerable<Product>> GetProductsBySupplierIdAsync(Guid supplierId)
     {
@@ -14,7 +16,8 @@ public class ProductRepository(MyDbContext dbContext) : Repository<Product>(dbCo
 
     public async Task<IEnumerable<Product>> GetAllProductsAndSuppliersAsync()
     {
-        return await DbContext.Products.AsNoTracking()
+        return await DbContext
+            .Products.AsNoTracking()
             .Include(x => x.Supplier)
             .OrderBy(x => x.Name)
             .ToListAsync();
@@ -22,7 +25,8 @@ public class ProductRepository(MyDbContext dbContext) : Repository<Product>(dbCo
 
     public async Task<Product?> GetProductAndSupplierAsync(Guid id)
     {
-        return await DbContext.Products.AsNoTracking()
+        return await DbContext
+            .Products.AsNoTracking()
             .Include(x => x.Supplier)
             .FirstOrDefaultAsync(x => x.Id == id);
     }

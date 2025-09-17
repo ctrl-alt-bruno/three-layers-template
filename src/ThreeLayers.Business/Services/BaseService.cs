@@ -19,7 +19,7 @@ public abstract class BaseService(INotifier notifier)
         }
 
         ValidationResult validationResult = validation.Validate(entity);
-            
+
         if (!validationResult.IsValid)
             Notify(validationResult);
 

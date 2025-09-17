@@ -4,8 +4,11 @@ using ThreeLayers.Business.Models.Validation;
 
 namespace ThreeLayers.Business.Services;
 
-public class ProductService(IProductRepository productRepository, ISupplierRepository supplierRepository, INotifier notifier)
-    : BaseService(notifier), IProductService
+public class ProductService(
+    IProductRepository productRepository,
+    ISupplierRepository supplierRepository,
+    INotifier notifier
+) : BaseService(notifier), IProductService
 {
     public async Task<bool> AddAsync(Product product)
     {
@@ -39,7 +42,10 @@ public class ProductService(IProductRepository productRepository, ISupplierRepos
         }
         catch (Exception ex)
         {
-            Notify($"Error adding product: {ex.Message}", Notifications.NotificationType.UnexpectedError);
+            Notify(
+                $"Error adding product: {ex.Message}",
+                Notifications.NotificationType.UnexpectedError
+            );
             return false;
         }
     }
@@ -88,7 +94,10 @@ public class ProductService(IProductRepository productRepository, ISupplierRepos
         }
         catch (Exception ex)
         {
-            Notify($"Error updating product: {ex.Message}", Notifications.NotificationType.UnexpectedError);
+            Notify(
+                $"Error updating product: {ex.Message}",
+                Notifications.NotificationType.UnexpectedError
+            );
             return false;
         }
     }
@@ -102,7 +111,7 @@ public class ProductService(IProductRepository productRepository, ISupplierRepos
         }
 
         Product? productToDelete = await productRepository.GetByIdAsync(productId);
-            
+
         if (productToDelete == null)
         {
             NotifyNotFound("Product");
@@ -116,7 +125,10 @@ public class ProductService(IProductRepository productRepository, ISupplierRepos
         }
         catch (Exception ex)
         {
-            Notify($"Error deleting product: {ex.Message}", Notifications.NotificationType.UnexpectedError);
+            Notify(
+                $"Error deleting product: {ex.Message}",
+                Notifications.NotificationType.UnexpectedError
+            );
             return false;
         }
     }

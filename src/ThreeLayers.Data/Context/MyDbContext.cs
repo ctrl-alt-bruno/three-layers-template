@@ -11,7 +11,8 @@ public sealed class MyDbContext : DbContext
     public DbSet<Supplier> Suppliers { get; set; }
     public DbSet<Address> Addresses { get; set; }
 
-    public MyDbContext(DbContextOptions<MyDbContext> dbContextOptions) : base(dbContextOptions)
+    public MyDbContext(DbContextOptions<MyDbContext> dbContextOptions)
+        : base(dbContextOptions)
     {
         ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         ChangeTracker.AutoDetectChangesEnabled = false;
@@ -21,22 +22,32 @@ public sealed class MyDbContext : DbContext
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MyDbContext).Assembly);
 
-        foreach (IMutableProperty property in modelBuilder.Model.GetEntityTypes()
-                     .SelectMany(e => e.GetProperties()
-                         .Where(p => p.ClrType == typeof(string))))
+        foreach (
+            IMutableProperty property in modelBuilder
+                .Model.GetEntityTypes()
+                .SelectMany(e => e.GetProperties().Where(p => p.ClrType == typeof(string)))
+        )
             property.SetMaxLength(100);
 
-        foreach (IMutableForeignKey? relationship in modelBuilder.Model.GetEntityTypes()
-                     .SelectMany(e => e.GetForeignKeys()))
+        foreach (
+            IMutableForeignKey? relationship in modelBuilder
+                .Model.GetEntityTypes()
+                .SelectMany(e => e.GetForeignKeys())
+        )
             relationship.DeleteBehavior = DeleteBehavior.SetNull;
 
         base.OnModelCreating(modelBuilder);
     }
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+    public override Task<int> SaveChangesAsync(
+        CancellationToken cancellationToken = new CancellationToken()
+    )
     {
-        foreach (EntityEntry entry in ChangeTracker.Entries()
-                     .Where(entry => entry.Entity.GetType().GetProperty("CreationDate") != null))
+        foreach (
+            EntityEntry entry in ChangeTracker
+                .Entries()
+                .Where(entry => entry.Entity.GetType().GetProperty("CreationDate") != null)
+        )
         {
             if (entry.State == EntityState.Added)
                 entry.Property("CreationDate").CurrentValue = DateTime.UtcNow;

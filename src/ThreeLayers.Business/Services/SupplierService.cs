@@ -5,12 +5,15 @@ using ThreeLayers.Business.Models.Validation;
 namespace ThreeLayers.Business.Services;
 
 public class SupplierService(ISupplierRepository supplierRepository, INotifier notifier)
-    : BaseService(notifier), ISupplierService
+    : BaseService(notifier),
+        ISupplierService
 {
     public async Task<bool> AddAsync(Supplier supplier)
     {
-        if (!Validate(new SupplierValidation(), supplier) || 
-            !Validate(new AddressValidation(), supplier.Address))
+        if (
+            !Validate(new SupplierValidation(), supplier)
+            || !Validate(new AddressValidation(), supplier.Address)
+        )
             return false;
 
         if (supplierRepository.FindAsync(s => s.Document == supplier.Document).Result.Any())
@@ -26,7 +29,10 @@ public class SupplierService(ISupplierRepository supplierRepository, INotifier n
         }
         catch (Exception ex)
         {
-            Notify($"Error adding supplier: {ex.Message}", Notifications.NotificationType.UnexpectedError);
+            Notify(
+                $"Error adding supplier: {ex.Message}",
+                Notifications.NotificationType.UnexpectedError
+            );
             return false;
         }
     }
@@ -44,7 +50,11 @@ public class SupplierService(ISupplierRepository supplierRepository, INotifier n
             return false;
         }
 
-        if (supplierRepository.FindAsync(s => s.Document == supplier.Document && s.Id != supplier.Id).Result.Any())
+        if (
+            supplierRepository
+                .FindAsync(s => s.Document == supplier.Document && s.Id != supplier.Id)
+                .Result.Any()
+        )
         {
             NotifyConflict("A supplier with this document already exists");
             return false;
@@ -57,7 +67,10 @@ public class SupplierService(ISupplierRepository supplierRepository, INotifier n
         }
         catch (Exception ex)
         {
-            Notify($"Error updating supplier: {ex.Message}", Notifications.NotificationType.UnexpectedError);
+            Notify(
+                $"Error updating supplier: {ex.Message}",
+                Notifications.NotificationType.UnexpectedError
+            );
             return false;
         }
     }
@@ -70,7 +83,9 @@ public class SupplierService(ISupplierRepository supplierRepository, INotifier n
             return false;
         }
 
-        Supplier? supplier = await supplierRepository.GetSupplierAndProductsAndAddressAsync(supplierId);
+        Supplier? supplier = await supplierRepository.GetSupplierAndProductsAndAddressAsync(
+            supplierId
+        );
 
         if (supplier == null)
         {
@@ -98,7 +113,10 @@ public class SupplierService(ISupplierRepository supplierRepository, INotifier n
         }
         catch (Exception ex)
         {
-            Notify($"Error deleting supplier: {ex.Message}", Notifications.NotificationType.UnexpectedError);
+            Notify(
+                $"Error deleting supplier: {ex.Message}",
+                Notifications.NotificationType.UnexpectedError
+            );
             return false;
         }
     }
